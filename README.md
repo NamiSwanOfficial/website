@@ -4,7 +4,7 @@
 
 <br>
 <div align="center">
-  <img src="./IMG/namiswan.jpg" alt="Logo" width="80" height="80">
+  <img src="./IMG/GITHUB/namiswan.jpg" alt="Logo" width="80" height="80">
   <h3 align="center">NamiSwan Discord Bot Website</h3>
   <p align="center">You are currently reading the documentation for the NamiSwan website, happy reading :)</p>
 </div>

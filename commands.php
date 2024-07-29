@@ -1,15 +1,12 @@
 <?php
-require_once 'load_env.php';
-
-try {
-    loadEnv(__DIR__ . '/.env');
-} catch (Exception $e) {
-    echo 'Erreur : ' . $e->getMessage();
-}
+session_start();
+require_once './FUNCTIONS/fileEnv.php';
+require_once './FUNCTIONS/discordData.php';
 
 $connection = mysqli_connect(getenv('DB_HOST'), getenv('DB_USER'), getenv('DB_PASS'), getenv('DB_NAME'));
 $Informations = [];
 $commands = [];
+$categories = [];
 
 if (!$connection) {
     //? Si la connexion n'a pas été effectuée
@@ -20,8 +17,6 @@ if (!$connection) {
     $rowPDP = mysqli_fetch_assoc($requetePDP);
     $Informations['pdpbot'] = $rowPDP['URL'];
 
-
-
     $requeteCMD = mysqli_query($connection, 'SELECT * FROM `commandesDiscord`');
     if ($requeteCMD) {
         while ($row = mysqli_fetch_assoc($requeteCMD)) {
@@ -30,13 +25,12 @@ if (!$connection) {
     } else {
         echo "Erreur dans la requête SQL : " . mysqli_error($connection);
     }
+
+    foreach ($commands as $cmd) {
+        $categories[$cmd['categorie']][] = $cmd;
+    }
 }
 $connection->close();
-
-$categories = [];
-foreach ($commands as $cmd) {
-    $categories[$cmd['categorie']][] = $cmd;
-}
 ?>
 
 
@@ -53,6 +47,7 @@ foreach ($commands as $cmd) {
     <title>NamiSwan | Commands</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="stylesheet" href="./CSS/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 
 <body>
@@ -81,7 +76,7 @@ foreach ($commands as $cmd) {
 
                 <main role="main" class="col-md-9 ml-sm-auto col-lg-7 px-md-4 mt-5">
                     <div class="search-bar mb-3">
-                        <input type="text" class="form-control" placeholder="Search" id="searchbar" onkeyup="searchBar()">
+                        <input type="text" class="form-control" placeholder="Search" id="searchbarCmds" onkeyup="searchBarCmds()">
                     </div>
                     <div class="command-list" style="overflow: auto; height:547px;">
                         <?php foreach ($commands as $cmd) : ?>
@@ -110,48 +105,7 @@ foreach ($commands as $cmd) {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     <script defer src="https://use.fontawesome.com/releases/v5.15.4/js/all.js" integrity="sha384-rOA1PnstxnOBLzCLMcre8ybwbTmemjzdNlILg8O7z1lUkLXozs4DHonlDtnE7fpc" crossorigin="anonymous"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const allLinks = document.querySelectorAll('.sidebar-sticky [data-category]');
-            const commandItems = document.querySelectorAll('.command-item');
-
-            allLinks.forEach(link => {
-                link.addEventListener('click', (event) => {
-                    event.preventDefault();
-                    const category = link.getAttribute('data-category');
-
-                    commandItems.forEach(item => {
-                        if (category === 'all' || item.getAttribute('data-category') === category) {
-                            item.classList.remove('category-hidden');
-                        } else {
-                            item.classList.add('category-hidden');
-                        }
-                    });
-                });
-            });
-
-            document.querySelector('.sidebar a[data-category="all"]').click();
-        });
-
-        function searchBar() {
-            let input = document.getElementById('searchbar').value.toLowerCase();
-            let commandItems = document.getElementsByClassName('command-item');
-
-            for (let i = 0; i < commandItems.length; i++) {
-                let commandItem = commandItems[i];
-                let category = commandItem.getAttribute('data-category').toLowerCase();
-                let subCategory = commandItem.getAttribute('data-subcategory') ? commandItem.getAttribute('data-subcategory').toLowerCase() : '';
-                let name = commandItem.getElementsByTagName('h5')[0].innerText.toLowerCase();
-                let description = commandItem.getElementsByTagName('p')[0].innerText.toLowerCase();
-
-                if (category.includes(input) || subCategory.includes(input) || name.includes(input) || description.includes(input)) {
-                    commandItem.style.display = "";
-                } else {
-                    commandItem.style.display = "none";
-                }
-            }
-        }
-    </script>
+    <script src="./JS/index.js"></script>
 </body>
 
 </html>
