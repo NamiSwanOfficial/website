@@ -1,15 +1,13 @@
 <?php
-// session_start();
-require_once 'load_env.php';
-
-try {
-    loadEnv(__DIR__ . '/.env');
-} catch (Exception $e) {
-    echo 'Erreur : ' . $e->getMessage();
-}
+require_once './FUNCTIONS/fileEnv.php';
+require_once './FUNCTIONS/discordData.php';
 
 $connection = mysqli_connect(getenv('DB_HOST'), getenv('DB_USER'), getenv('DB_PASS'), getenv('DB_NAME'));
+$urlConnection = getenv('URLCO');
 $Informations = [];
+$maintenance;
+$access_token = isset($_SESSION['access_token']) ? $_SESSION['access_token'] : '';
+$user = $access_token ? get_discord_data('https://discord.com/api/users/@me', $access_token) : [];
 
 //* Connexion a la BDD
 if (!$connection) {
@@ -50,6 +48,10 @@ if (!$connection) {
     $requeteNbreServeur = mysqli_query($connection, 'SELECT `NomTexte` FROM `texteSite` WHERE `Utilite` =  "NombreServeurs"');
     $rowNbreServ = mysqli_fetch_assoc($requeteNbreServeur);
     $Informations['nbreserv'] = $rowNbreServ['NomTexte'];
+
+    $requeteMaintenance = mysqli_query($connection, 'SELECT `value` FROM `variablesDiscord` WHERE `nom`= "Maintenance"');
+    $rowMaintenance = mysqli_fetch_assoc($requeteMaintenance);
+    $maintenance = $rowMaintenance;
 }
 ?>
 
@@ -73,7 +75,7 @@ if (!$connection) {
                     <?php
                     $currentFileName = basename($_SERVER['PHP_SELF']);
 
-                    if ($currentFileName === "index.php" || $currentFileName === "commands.php" || $currentFileName === "tos.php" || $currentFileName === "pp.php") {
+                    if ($currentFileName === "index.php" || $currentFileName === "commands.php" || $currentFileName === "tos.php" || $currentFileName === "pp.php" || $currentFileName === "dashboard.php" || $currentFileName === "manage_bot.php" ||  $currentFileName === "error.php") {
                         $linkToCommands = "./commands.php";
                         echo '<li class="nav-item"><a class="nav-link headerTxt" href="' . $linkToCommands . '"><i class="far fa-list-alt"></i> Commands</a></li>';
                     }
@@ -84,8 +86,31 @@ if (!$connection) {
                     <li class="nav-item">
                         <a class="nav-link headerTxt" href="<?php echo $Informations['invitationserv']; ?>" target="_blank"><i class="fas fa-headset"></i> Support</a>
                     </li>
+                    <?php if (isset($_SESSION['access_token'])) : ?>
+                        <li class="nav-item dropdown" style="position: relative; bottom: 5px;">
+                            <a class="nav-link dropdown-toggle headerTxt" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <img src="https://cdn.discordapp.com/avatars/<?php echo $user["id"] ?>/<?php echo $user["avatar"] ?>.webp?size=512" alt="Profile Picture" class="pfp">
+                            </a>
+                            <ul class="dropdown-menu dropdown_menuHD">
+                                <li><a class="dropdown-item dropdown_itemHD headerTxt" href="./dashboard.php"><i class="fa-brands fa-discord me-2"></i> Dashboard</a></li>
+                                <li><a class="dropdown-item dropdown_itemHD headerTxt" href="./logout.php"><i class="fa-solid fa-right-from-bracket me-2"></i> Logout</a></li>
+                            </ul>
+                        </li>
+                    <?php else : ?>
+                        <li class="nav-item">
+                            <a class="nav-link headerTxt" href="<?php echo $urlConnection ?>" target="_blank"><i class="fa-solid fa-right-to-bracket"></i> Login</a>
+                        </li>
+                    <?php endif; ?>
                 </ul>
             </div>
         </div>
     </nav>
 </section>
+
+<?php if (!empty($maintenance["value"])) : ?>
+    <section class="isMaintenance">
+        <div class="messagedefilant">
+            <div id="leMessDefilant" data-text="NamiSwan is a maintenance !"></div>
+        </div>
+    </section>
+<?php endif ?>

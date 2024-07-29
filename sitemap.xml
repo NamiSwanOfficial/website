@@ -15,4 +15,16 @@
 <url>
     <loc>https://namiswan.tsukizo.fr/pp.php</loc>
 </url>
+<url>
+    <loc>https://namiswan.tsukizo.fr/dashboard.php</loc>
+</url>
+<url>
+    <loc>https://namiswan.tsukizo.fr/error.php</loc>
+</url>
+<url>
+    <loc>https://namiswan.tsukizo.fr/logout.php</loc>
+</url>
+<url>
+    <loc>https://namiswan.tsukizo.fr/manage_bot.php</loc>
+</url>
 </urlset>
